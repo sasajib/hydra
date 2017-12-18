@@ -1,4 +1,8 @@
 import sbt.Resolver
+import sbt.Keys.version
+import sbt._
+
+enablePlugins(JavaAppPackaging)
 
 val JDK = "1.8"
 val buildNumber = scala.util.Properties.envOrNone("version").map(v => "." + v).getOrElse("")
