@@ -32,22 +32,13 @@ lazy val restartSettings = Seq(
   mainClass in reStart := Some("hydra.sandbox.app.HydraSandbox")
 )
 
-val noPublishSettings = Seq(
+lazy val noPublishSettings = Seq(
   publish := {},
   publishLocal := {},
   publishArtifact := false,
   // required until these tickets are closed https://github.com/sbt/sbt-pgp/issues/42,
   // https://github.com/sbt/sbt-pgp/issues/36
-  publishTo := Some(Resolver.file("Unused transient repository", file("target/unusedrepo"))),
-  packageBin := {
-    new File("")
-  },
-  packageSrc := {
-    new File("")
-  },
-  packageDoc := {
-    new File("")
-  }
+  publishTo := Some(Resolver.file("Unused transient repository", file("target/unusedrepo")))
 )
 
 lazy val moduleSettings = defaultSettings ++ Test.testSettings //++ Publish.settings
