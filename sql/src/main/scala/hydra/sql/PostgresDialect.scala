@@ -2,9 +2,8 @@ package hydra.sql
 
 import java.sql.JDBCType
 
-import hydra.avro.convert.IsoDate
+import hydra.avro.convert.{IsoDate, UUIDType}
 import hydra.avro.util.SchemaWrapper
-import hydra.sql.JdbcUtils.isLogicalType
 import org.apache.avro.LogicalTypes.Decimal
 import org.apache.avro.Schema.Type.{BYTES, UNION}
 import org.apache.avro.Schema.{Field, Type}
@@ -31,12 +30,13 @@ private[sql] object PostgresDialect extends JdbcDialect {
     case _ => None
   }
 
-  private def logicalStringTypes(schema: Schema) = {
-    if (isLogicalType(schema, IsoDate.IsoDateLogicalTypeName)) {
-      Some(JdbcType("TIMESTAMP", JDBCType.TIMESTAMP))
-    } else {
-      Some(JdbcType("TEXT", JDBCType.VARCHAR))
-    }
+  private def logicalStringTypes(schema: Schema): Option[JdbcType] = {
+    Option(schema.getLogicalType) collect {
+      case x if x.getName == IsoDate.IsoDateLogicalTypeName =>
+        Some(JdbcType("TIMESTAMP", JDBCType.TIMESTAMP))
+      case x if x.getName == UUIDType.UuidLogicalTypeName =>
+        Some(JdbcType("UUID", JDBCType.JAVA_OBJECT))
+    } getOrElse(Some(JdbcType("TEXT", JDBCType.VARCHAR)))
   }
 
   override def getArrayType(schema: Schema): Option[JdbcType] = {

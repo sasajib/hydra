@@ -6,7 +6,7 @@ import java.sql.{PreparedStatement, Timestamp}
 import java.time.{LocalDate, ZoneId}
 
 import com.google.common.collect.Lists
-import hydra.avro.convert.{ISODateConverter, IsoDate}
+import hydra.avro.convert.{ISODateConverter, IsoDate, UUIDConverter, UUIDType}
 import hydra.avro.util.SchemaWrapper
 import hydra.sql.JdbcUtils.{getJdbcType, isLogicalType}
 import org.apache.avro.LogicalTypes.Decimal
@@ -65,6 +65,9 @@ private[sql] class AvroValueSetter(schema: SchemaWrapper, dialect: JdbcDialect) 
           pstmt.setTimestamp(idx,
             new Timestamp(new ISODateConverter()
               .fromCharSequence(value.toString, schema, IsoDate).toInstant.toEpochMilli))
+        case Schema.Type.STRING if isLogicalType(schema, UUIDType.UuidLogicalTypeName) =>
+          pstmt.setObject(idx, new UUIDConverter()
+            .fromCharSequence(value.toString, schema, UUIDType))
         case Schema.Type.STRING =>
           pstmt.setString(idx, value.toString)
         case Schema.Type.BOOLEAN =>

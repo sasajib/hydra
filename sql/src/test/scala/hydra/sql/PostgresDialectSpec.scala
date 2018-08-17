@@ -3,7 +3,7 @@ package hydra.sql
 import java.sql.JDBCType
 import java.sql.JDBCType._
 
-import hydra.avro.convert.IsoDate
+import hydra.avro.convert.{IsoDate, UUIDType}
 import hydra.avro.util.SchemaWrapper
 import hydra.sql.JdbcUtils.getJdbcType
 import org.apache.avro.LogicalTypes.LogicalTypeFactory
@@ -20,6 +20,11 @@ class PostgresDialectSpec extends Matchers
   LogicalTypes.register(IsoDate.IsoDateLogicalTypeName, new LogicalTypeFactory {
     override def fromSchema(schema: Schema): LogicalType = IsoDate
   })
+
+  LogicalTypes.register(UUIDType.UuidLogicalTypeName, new LogicalTypeFactory {
+    override def fromSchema(schema: Schema): LogicalType = UUIDType
+  })
+
 
   implicit def fromSchema(schema: Schema): SchemaWrapper = SchemaWrapper.from(schema)
 
@@ -93,6 +98,13 @@ class PostgresDialectSpec extends Matchers
       |				"logicalType": "iso-datetime"
       |			}
       |		},
+      |    {
+      |			"name": "testUuid",
+      |			"type": {
+      |				"type": "string",
+      |				"logicalType": "uuid"
+      |			}
+      |		},
       |		{
       |			"name": "friends",
       |			"type": {
@@ -123,7 +135,8 @@ class PostgresDialectSpec extends Matchers
       PostgresDialect.getJDBCType(avro.getField("friends").schema()) shouldBe Some(JdbcType("TEXT[]", ARRAY))
       PostgresDialect.getJDBCType(avro.getField("signupDate").schema()) shouldBe None
       PostgresDialect.getJDBCType(avro.getField("testTS").schema()).get shouldBe JdbcType("TIMESTAMP", TIMESTAMP)
-    }
+      PostgresDialect.getJDBCType(avro.getField("testUuid").schema()).get shouldBe JdbcType("UUID", JAVA_OBJECT)
+  }
 
     it("works with record types") {
       val schema =
